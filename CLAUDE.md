@@ -4,7 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-This repository currently contains only a design brief — [Dor Masterplan Part 1.md](Dor%20Masterplan%20Part%201.md) — and no source code, no package manifest, and no build/lint/test tooling yet. There is nothing to build or run. When development starts, this file should be updated with the actual commands (install, dev server, build, lint, test) and the real code architecture once a framework/stack is chosen.
+The site is built: a Vite + vanilla JS single-page app implementing all 9 screens plus the secret layer, against **Direction C (Crayon Box)** from Part 1. [Dor Masterplan Part 1.md](Dor%20Masterplan%20Part%201.md) is the design system; [dor-masterplan-part2-content-and-build.md](dor-masterplan-part2-content-and-build.md) is the real copy, per-screen behavior spec, and build sequence — both are the source of truth for anything not obvious from the code itself.
+
+## Commands
+
+- `npm install` — install dependencies (just Vite).
+- `npm run dev` — start the dev server (default port 5173).
+- `npm run build` — production build to `dist/`.
+- `npm run preview` — serve the production build locally.
+- No test suite or linter is configured.
+
+### Giphy key
+`src/giphy.js` reads `import.meta.env.VITE_GIPHY_API_KEY`. Create a `.env` at the repo root (gitignored) with `VITE_GIPHY_API_KEY=...`; see `.env.example` for the placeholder shape. Without a key (or on a failed fetch), every narrator beat falls back to the hand-drawn doodle in `src/doodle.js` — this is expected, not an error, and is the deliberate reason Shinchan's actual copyrighted art was never hand-drawn into this codebase: real reactions only ever come from the user's own Giphy-fetched GIFs.
 
 ## What "Dor" is
 
@@ -20,7 +31,7 @@ The core visual motif is **the Dor** — a twisted red-and-gold cord rendered as
 ## Design system (from the masterplan)
 
 ### Three competing color/material directions
-The masterplan defines three full palettes — **A: Festival Warm** (marigold/maroon), **B: Notebook Faded** (cooler, faded-photo, blue secondary), **C: Crayon Box** (louder, higher saturation) — as CSS custom properties (`--paper`, `--ink`, `--maroon`, etc.). Only one direction should be built out; the mockup deliverable was meant to help pick one. If build work starts before a direction is chosen, ask which palette to implement rather than guessing or blending.
+The masterplan defines three full palettes — **A: Festival Warm** (marigold/maroon), **B: Notebook Faded** (cooler, faded-photo, blue secondary), **C: Crayon Box** (louder, higher saturation) — as CSS custom properties (`--paper`, `--ink`, `--maroon`, etc.). **C is the one built** (tokens live in `:root` at the top of `src/style.css`). If asked to switch directions, swap that token block for A's or B's values from Part 1 §3 rather than introducing a theme-switcher — nothing in the build was designed to run more than one palette at once.
 
 ### Typography rule
 - Headlines/narration: one chunky hand-marker face (Permanent Marker / Patrick Hand).
@@ -41,7 +52,24 @@ Each screen must reuse one of these verbs, not invent new gimmicks: Pull (thread
 - Rakhi Note is the deliberate exception: near-zero motion, no character.
 - Must respect `prefers-reduced-motion` (fall back to simple fades; specifically disable the note's stitch animation).
 
-## Working in this repo
+## Code architecture
 
-- There is no chosen tech stack yet. Before writing implementation code, confirm the framework/tooling with the user rather than assuming one.
-- Treat the masterplan's structural/interaction/motion rules as constraints to satisfy, not suggestions — they're deliberately specific (e.g. "not a swapped-in static bow asset", "not a numeric score", "no character presence after the opening beat" on Rakhi Note) because generic implementations of these screens are the known failure mode this brief is guarding against.
+State-driven single-page app; there's no router beyond an in-memory screen index.
+
+- `src/main.js` — entry point and screen router. Owns `#stage`, wires the enter/exit card transition (`stage--exit`/`stage--enter`), and global keyboard nav (→/Enter clicks whichever `[data-primary-action]` is enabled; ← goes back). Exposes an `api` object (`next(markId)`, `prev()`, `goTo(id)`, `replay()`) that every screen module receives as its second argument.
+- `src/state.js` — the single source of truth: current screen index, thread marks earned, per-screen completion sets (`roastRevealed`, `memoriesOpened`, `giftsUnwrapped`, `quizAnswered`), and the secret-fragment `Set` (persisted to `localStorage`, since that easter egg is meant to survive a reload/replay while the rest of the story state is not).
+- `src/thread.js` — the Dor itself: one `<path>` (`.thread-spine`) whose `d` is generated from an array of anchor points via Catmull-Rom-to-bezier smoothing (`catmullRomPath`). `addMark(id)` drops a decoration at a fixed arc-length fraction using `getPointAtLength`. `morphToBow()` doesn't swap assets — it lerps the SAME point array from the wavy `WAVE_POINTS` to a bow-shaped `BOW_POINTS` frame-by-frame (both arrays have matching length so point-for-point interpolation stays coherent), then fades the accumulated marks into it. A second `.thread-highlight` path is purely decorative (the two-tone twist) and never gets read back — the spine is the one that's "the exact path the user has been watching."
+- `src/doodle.js` — the Shinchan narrator. `createNarrator()` renders the doodle fallback immediately, then asynchronously swaps in a real Giphy GIF if `fetchGif()` resolves one; `setFigureEmotion()` is the same swap exposed standalone for screens (Roast) that re-target one figure across multiple reveals rather than creating a new narrator each time.
+- `src/giphy.js` — fetch-and-cache-per-session wrapper around the Giphy search endpoint; returns `null` (not a throw) on missing key or failed fetch, which is what `doodle.js` treats as "keep the doodle."
+- `src/secret.js` — the five hidden thread-fragment doodles. Each screen that hides one calls `createFragment(screenId)` and positions it with its own scoped inline style (there's no shared layout for these — the whole point is each is disguised differently per screen, per the masterplan's table). Taps are deduped by fragment id in `state.js`; the 5th distinct one fires the reveal modal exactly once (gated by `localStorage`'s `dor:secretRevealed`).
+- `src/screens/*.js` — one module per screen, each exporting `mount(stage, api)` that builds its own DOM into `stage` and returns an optional cleanup function (for `setTimeout`/listener teardown) that `main.js` calls before switching away. Screens are intentionally NOT uniform in shape (Finale renders no `.card` at all, per the brief's "card disappears"); `src/style.css` scopes most per-screen layout via `[data-screen="..."] .card` selectors rather than per-screen stylesheets.
+
+### A CSS trap worth knowing about
+`style.css` had a real bug from exactly the failure mode this project's tooling warns about: `.gift-box:nth-of-type(2)` (two selector components) silently beat `.gift-box--open` (one component) on specificity, so an unwrapped gift box never visually changed color. The fix was `.gift-box.gift-box--open`. When adding state-modifier classes to an element that also has a structural/positional selector (`:nth-of-type`, `:nth-child`, a type selector), match or exceed that selector's specificity, don't just rely on source order.
+
+## Open placeholders (see Part 2's "Remaining requirements checklist")
+These are intentionally left as clearly-marked placeholders in the code, not invented — fill them in directly rather than asking Claude to guess:
+- The 7 Memory Archive photos + captions (`src/screens/memories.js`, `[PHOTO_0X]` / `[CAPTION_0X]`).
+- The final Rakhi Note letter text (`src/screens/rakhiNote.js` — currently literal Lorem Ipsum, per Part 2's own instruction).
+- Gift Box 2's "remember when" memory, and Box 3's real clue text (`src/screens/gifts.js`, both still bracketed).
+- The real `VITE_GIPHY_API_KEY` in a local `.env`.

@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Quicksand:wght@400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100%; background:#e2ddd0; display:flex; align-items:center; justify-content:center; padding:24px; font-family:'Quicksand',sans-serif; }
+    a { color:#8C2F2B; } a:hover { color:#F2A03D; }
+    .card { position:relative; width:332px; background:#FBF3E7; border-radius:8px; box-shadow:0 16px 36px rgba(0,0,0,.18); transform:rotate(-1deg); padding:26px 24px 22px; }
+    .tape { position:absolute; width:60px; height:22px; top:-10px; right:30px; background:repeating-linear-gradient(45deg, rgba(255,255,255,.3) 0 5px, rgba(255,255,255,.05) 5px 10px), #F2A03D; opacity:.85; transform:rotate(6deg); box-shadow:0 2px 5px rgba(0,0,0,.15); }
+    h1 { font-family:'Permanent Marker',cursive; font-weight:400; font-size:22px; color:#8C2F2B; margin:0 0 2px; }
+    .sub { font-size:12px; color:#2B2420; opacity:.65; margin:0 0 18px; }
+    .row { display:flex; align-items:center; gap:12px; padding:7px 0; border-bottom:1px solid #E8D9BE; }
+    .row:last-child { border-bottom:none; }
+    .swab { width:34px; height:34px; border-radius:6px; flex:0 0 auto; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+    .meta { display:flex; flex-direction:column; gap:1px; }
+    .tok { font-size:12px; font-weight:700; color:#2B2420; }
+    .use { font-size:11px; color:#2B2420; opacity:.6; }
+    .hex { margin-left:auto; font-size:11px; font-family:monospace; color:#2B2420; opacity:.55; }
+  </style>
+</helmet>
+<div class="card">
+  <div class="tape"></div>
+  <h1>Direction A</h1>
+  <div class="sub">Festival Warm — marigold / maroon, closest to the original plan</div>
+
+  <div class="row"><div class="swab" style="background:#FBF3E7"></div><div class="meta"><div class="tok">paper</div><div class="use">background</div></div><div class="hex">#FBF3E7</div></div>
+  <div class="row"><div class="swab" style="background:#E8D9BE"></div><div class="meta"><div class="tok">paper-line</div><div class="use">faint rules, borders</div></div><div class="hex">#E8D9BE</div></div>
+  <div class="row"><div class="swab" style="background:#F2A03D"></div><div class="meta"><div class="tok">marigold</div><div class="use">primary accent, thread gold</div></div><div class="hex">#F2A03D</div></div>
+  <div class="row"><div class="swab" style="background:#8C2F2B"></div><div class="meta"><div class="tok">maroon</div><div class="use">headlines, thread red, ink</div></div><div class="hex">#8C2F2B</div></div>
+  <div class="row"><div class="swab" style="background:#E14B3D"></div><div class="meta"><div class="tok">crayon-red</div><div class="use">roast callouts, stickers</div></div><div class="hex">#E14B3D</div></div>
+  <div class="row"><div class="swab" style="background:#5C7A4E"></div><div class="meta"><div class="tok">leaf</div><div class="use">sparing secondary accent</div></div><div class="hex">#5C7A4E</div></div>
+  <div class="row"><div class="swab" style="background:#2B2420"></div><div class="meta"><div class="tok">ink</div><div class="use">body text</div></div><div class="hex">#2B2420</div></div>
+</div>
+</x-dc>
+</body>
+</html>

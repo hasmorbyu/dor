@@ -1,0 +1,26 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1960, "h": 380 },
+
+    { "file": "Swatch_A.dc.html", "x": 0, "y": 520, "w": 380, "h": 480 },
+    { "file": "ColdOpen_A.dc.html", "x": 480, "y": 520, "w": 400, "h": 680 },
+    { "file": "Roast_A.dc.html", "x": 980, "y": 520, "w": 480, "h": 720 },
+    { "file": "RakhiNote_A.dc.html", "x": 1560, "y": 520, "w": 400, "h": 800 },
+
+    { "file": "Swatch_B.dc.html", "x": 0, "y": 1470, "w": 380, "h": 480 },
+    { "file": "ColdOpen_B.dc.html", "x": 480, "y": 1470, "w": 400, "h": 680 },
+    { "file": "Roast_B.dc.html", "x": 980, "y": 1470, "w": 480, "h": 720 },
+    { "file": "RakhiNote_B.dc.html", "x": 1560, "y": 1470, "w": 400, "h": 800 },
+
+    { "file": "Swatch_C.dc.html", "x": 0, "y": 2420, "w": 380, "h": 480 },
+    { "file": "ColdOpen_C.dc.html", "x": 480, "y": 2420, "w": 400, "h": 680 },
+    { "file": "Roast_C.dc.html", "x": 980, "y": 2420, "w": 480, "h": 720 },
+    { "file": "RakhiNote_C.dc.html", "x": 1560, "y": 2420, "w": 400, "h": 800 }
+  ],
+  "annotations": [
+    { "id": "label-a", "x": 0, "y": 430, "w": 420, "text": "DIRECTION A — Festival Warm" },
+    { "id": "label-b", "x": 0, "y": 1380, "w": 420, "text": "DIRECTION B — Notebook Faded" },
+    { "id": "label-c", "x": 0, "y": 2330, "w": 420, "text": "DIRECTION C — Crayon Box" }
+  ],
+  "launch": { "view": "canvas" }
+}
