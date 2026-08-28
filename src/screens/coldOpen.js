@@ -30,7 +30,7 @@ export function mount(stage, api) {
   stage.appendChild(card);
 
   const narrator = createNarrator({
-    emotion: 'mischievous',
+    gifKey: 'coldOpen',
     role: 'gatekeeper',
     lines: ['He spent way too much time on this.'],
   });

@@ -1,3 +1,5 @@
+import { createNarrator } from '../doodle.js';
+
 const QUESTIONS = [
   {
     id: 'q1',
@@ -27,11 +29,15 @@ export function mount(stage, api) {
     <div class="tape tape--right"></div>
     <div class="kicker">Quiz</div>
     <h1 class="headline">final interrogation.</h1>
+    <div class="quiz__narrator-slot"></div>
     <div class="quiz__questions"></div>
     <div class="report-card-slot"></div>
     <div class="continue-row"></div>
   `;
   stage.appendChild(card);
+
+  const narrator = createNarrator({ gifKey: 'quiz', role: 'judge', side: 'right' });
+  card.querySelector('.quiz__narrator-slot').replaceWith(narrator);
 
   const questionsEl = card.querySelector('.quiz__questions');
   const reportSlot = card.querySelector('.report-card-slot');

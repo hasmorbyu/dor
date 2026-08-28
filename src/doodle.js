@@ -1,8 +1,8 @@
-// The narrator: a Shinchan reaction, sourced live from Giphy (screen's
-// emotion -> search query) with a hand-drawn doodle fallback when there's
-// no API key yet or the request fails. Framed to overlap the card edge
-// like a character standing on the page, never a boxed-in avatar.
-import { fetchGif } from './giphy.js';
+// The narrator: a Shinchan reaction, sourced live from Giphy via a curated
+// per-beat GIF id (see narratorGifs.js) with a hand-drawn doodle fallback
+// when there's no API key yet or the request fails. Framed to overlap the
+// card edge like a character standing on the page, never a boxed-in avatar.
+import { fetchNarratorGif } from './giphy.js';
 
 export function doodleSvg() {
   return `
@@ -20,13 +20,13 @@ export function doodleSvg() {
 
 /**
  * @param {object} opts
- * @param {string} opts.emotion - short label, used to build the Giphy query
+ * @param {string} opts.gifKey - key into narratorGifs.js's CURATED_GIFS
  * @param {string[]} [opts.lines] - 1-2 short narration beats, max
  * @param {string} [opts.role] - narrator role, for the image alt text
  * @param {'left'|'right'} [opts.side] - which edge the figure overlaps
  * @param {boolean} [opts.wobble] - allow the one-idle-wobble-per-screen loop
  */
-export function createNarrator({ emotion, lines = [], role = '', side = 'left', wobble = true }) {
+export function createNarrator({ gifKey, lines = [], role = '', side = 'left', wobble = true }) {
   const wrap = document.createElement('div');
   wrap.className = `narrator narrator--${side}`;
 
@@ -48,18 +48,18 @@ export function createNarrator({ emotion, lines = [], role = '', side = 'left', 
     wrap.appendChild(bubble);
   }
 
-  setFigureEmotion(figure, emotion, role);
+  setFigureGif(figure, gifKey, role);
 
   return wrap;
 }
 
 /**
- * Fetch a GIF for the given emotion and swap it into `figureEl`, keeping
- * the doodle in place until (and unless) a real GIF resolves. Reusable so
- * screens like Roast can re-target the same figure per reveal.
+ * Fetch the curated GIF for the given beat key and swap it into `figureEl`,
+ * keeping the doodle in place until (and unless) a real GIF resolves.
+ * Reusable so screens like Roast can re-target the same figure per reveal.
  */
-export function setFigureEmotion(figureEl, emotion, role = '') {
-  fetchGif(`shinchan ${emotion}`).then((gif) => {
+export function setFigureGif(figureEl, gifKey, role = '') {
+  fetchNarratorGif(gifKey).then((gif) => {
     if (!gif) return;
     const img = document.createElement('img');
     img.src = gif.url;

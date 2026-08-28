@@ -1,4 +1,5 @@
 import { createFragment } from '../secret.js';
+import { createNarrator } from '../doodle.js';
 import { state } from '../state.js';
 
 const BOXES = [
@@ -41,6 +42,7 @@ export function mount(stage, api) {
     <div class="kicker">Gifts</div>
     <h1 class="headline">unwrap.</h1>
     <p class="sub">drag the ribbon — or just tap the box.</p>
+    <div class="gifts__narrator-slot"></div>
     <div class="gifts__grid"></div>
     <div class="gift-reveal" hidden></div>
     <div class="continue-row">
@@ -48,6 +50,9 @@ export function mount(stage, api) {
     </div>
   `;
   stage.appendChild(card);
+
+  const narrator = createNarrator({ gifKey: 'gifts', role: 'chaos agent', side: 'right' });
+  card.querySelector('.gifts__narrator-slot').replaceWith(narrator);
 
   const grid = card.querySelector('.gifts__grid');
   const revealPanel = card.querySelector('.gift-reveal');

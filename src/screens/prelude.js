@@ -27,7 +27,7 @@ export function mount(stage, api) {
   stage.appendChild(card);
 
   const narrator = createNarrator({
-    emotion: 'confused',
+    gifKey: 'prelude',
     role: 'confused courier',
     side: 'left',
   });

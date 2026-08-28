@@ -1,20 +1,20 @@
-import { doodleSvg, setFigureEmotion } from '../doodle.js';
+import { doodleSvg, setFigureGif } from '../doodle.js';
 import { createFragment } from '../secret.js';
 
 const REVEALS = [
-  { label: 'Maa Ki Chugli Saheli', emotion: 'laughing mischievous', pos: [2, 4] },
-  { label: 'NAP-pur ki Devi', emotion: 'sleepy exhausted', pos: [58, 0] },
-  { label: 'Papa ki Pyaari Perfect Pari', emotion: 'smug proud', pos: [80, 24] },
-  { label: 'Raat mei Laath maarke bistar se gira dene wali', emotion: 'mischievous', pos: [82, 58] },
+  { label: 'Maa Ki Chugli Saheli', gifKey: 'roast-chugli', pos: [2, 4] },
+  { label: 'NAP-pur ki Devi', gifKey: 'roast-nappur', pos: [58, 0] },
+  { label: 'Papa ki Pyaari Perfect Pari', gifKey: 'roast-pari', pos: [80, 24] },
+  { label: 'Raat mei Laath maarke bistar se gira dene wali', gifKey: 'roast-laath', pos: [82, 58] },
   {
     label: 'BEST SCOOTY RIDER 🛵',
-    emotion: 'impressed proud',
+    gifKey: 'roast-scooty',
     pos: [28, 62],
     wide: true,
     poem: ['never taught me how to drive,', 'just gave me the best seat in the back.'],
   },
-  { label: 'Best Chef', emotion: 'eating happy', pos: [2, 58] },
-  { label: 'Annoying Hero', emotion: 'soft warm proud', pos: [2, 30] },
+  { label: 'Best Chef', gifKey: 'roast-chef', pos: [2, 58] },
+  { label: 'Annoying Hero', gifKey: 'roast-hero', pos: [2, 30] },
 ];
 
 export function mount(stage, api) {
@@ -68,7 +68,7 @@ export function mount(stage, api) {
     sticker.addEventListener('click', () => {
       if (sticker.classList.contains('sticker--revealed')) return;
       sticker.classList.add('sticker--revealed', 'thread-mark--pop');
-      setFigureEmotion(figure, reveal.emotion, 'investigator');
+      setFigureGif(figure, reveal.gifKey, 'investigator');
       revealedCount += 1;
       if (revealedCount === REVEALS.length) continueBtn.disabled = false;
     });

@@ -1,4 +1,5 @@
 import { createFragment } from '../secret.js';
+import { createNarrator } from '../doodle.js';
 import { state } from '../state.js';
 
 const FOLDERS = [
@@ -37,6 +38,7 @@ export function mount(stage, api) {
     <div class="tape tape--left"></div>
     <div class="kicker">The Sibling Archives</div>
     <h1 class="headline">classified evidence</h1>
+    <div class="memories__narrator-slot"></div>
     <div class="memories__folders"></div>
     <div class="memories__viewer" hidden></div>
     <div class="continue-row">
@@ -44,6 +46,9 @@ export function mount(stage, api) {
     </div>
   `;
   stage.appendChild(card);
+
+  const narrator = createNarrator({ gifKey: 'memories', role: 'archivist' });
+  card.querySelector('.memories__narrator-slot').replaceWith(narrator);
 
   const foldersEl = card.querySelector('.memories__folders');
   const viewer = card.querySelector('.memories__viewer');

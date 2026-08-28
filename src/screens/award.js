@@ -1,4 +1,5 @@
 import { createFragment } from '../secret.js';
+import { createNarrator } from '../doodle.js';
 
 export function mount(stage, api) {
   const card = document.createElement('div');
@@ -25,6 +26,7 @@ export function mount(stage, api) {
     </div>
 
     <div class="award__genuine">and, somehow, still being there when I needed you.</div>
+    <div class="award__narrator-slot"></div>
 
     <div class="award__issuer">
       OFFICIALLY ISSUED BY<br/>
@@ -41,6 +43,14 @@ export function mount(stage, api) {
     </div>
   `;
   stage.appendChild(card);
+
+  const narrator = createNarrator({
+    gifKey: 'award',
+    role: 'ceremony host',
+    lines: ["Oh. This one's real."],
+    side: 'right',
+  });
+  card.querySelector('.award__narrator-slot').replaceWith(narrator);
 
   const fragment = createFragment('award');
   fragment.style.cssText = 'position:absolute; right:8px; bottom:64px; z-index:1; opacity:.4;';

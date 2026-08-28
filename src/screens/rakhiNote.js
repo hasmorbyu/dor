@@ -37,7 +37,7 @@ export function mount(stage, api) {
 
   const narratorSlot = card.querySelector('.rakhi-note__narrator-slot');
   const narrator = createNarrator({
-    emotion: 'quiet soft',
+    gifKey: 'rakhiNote',
     role: 'steps away',
     lines: ["Okay. This one's yours."],
     wobble: false,
