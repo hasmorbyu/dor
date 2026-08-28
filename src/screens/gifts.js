@@ -1,5 +1,5 @@
 import { createFragment } from '../secret.js';
-import { createNarrator } from '../doodle.js';
+import { createNarratorStage } from '../narrator.js';
 import { state } from '../state.js';
 
 const BOXES = [
@@ -51,8 +51,9 @@ export function mount(stage, api) {
   `;
   stage.appendChild(card);
 
-  const narrator = createNarrator({ gifKey: 'gifts', role: 'chaos agent', side: 'right' });
-  card.querySelector('.gifts__narrator-slot').replaceWith(narrator);
+  const narrator = createNarratorStage({ role: 'chaos agent', pos: 'top-right' });
+  card.querySelector('.gifts__narrator-slot').replaceWith(narrator.el);
+  narrator.play([{ gifKey: 'gifts', action: 'enter', pause: 400 }]);
 
   const grid = card.querySelector('.gifts__grid');
   const revealPanel = card.querySelector('.gift-reveal');
@@ -69,6 +70,9 @@ export function mount(stage, api) {
       state.giftsUnwrapped.add(box.id);
       if (state.giftsUnwrapped.size === BOXES.length) continueBtn.disabled = false;
     }
+    const idx = BOXES.findIndex((b) => b.id === box.id);
+    narrator.setPosition(['top-left', 'center', 'top-right'][idx] ?? 'top-right');
+    narrator.pose('react');
     showReveal(box);
   }
 

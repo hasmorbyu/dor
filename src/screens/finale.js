@@ -1,6 +1,6 @@
 import { state } from '../state.js';
 import { thread } from '../thread.js';
-import { createNarrator } from '../doodle.js';
+import { createNarratorStage } from '../narrator.js';
 
 const CLOSING = `we'll probably keep fighting.
 you'll probably keep annoying me.
@@ -25,16 +25,19 @@ export function mount(stage, api) {
   `;
   stage.appendChild(wrap);
 
-  const narrator = createNarrator({
-    gifKey: 'finale',
-    role: 'narrator',
-    lines: ["Okay. That's enough emotions for today."],
-    wobble: false,
-  });
-  wrap.querySelector('.finale__narrator-slot').replaceWith(narrator);
+  const narrator = createNarratorStage({ role: 'narrator', pos: 'bottom-right' });
+  wrap.querySelector('.finale__narrator-slot').replaceWith(narrator.el);
 
   thread.morphToBow({
-    onDone: () => wrap.classList.add('finale--visible'),
+    onDone: () => {
+      wrap.classList.add('finale--visible');
+      narrator
+        .play(
+          [{ gifKey: 'finale', action: 'enter', text: "Okay. That's enough emotions for today.", emphasis: 'punchline', pause: 1400 }],
+          { idlePose: null }
+        )
+        .then(() => narrator.leave());
+    },
   });
 
   wrap.querySelector('[data-primary-action]').addEventListener('click', () => api.replay());

@@ -1,5 +1,5 @@
 import { createFragment } from '../secret.js';
-import { createNarrator } from '../doodle.js';
+import { createNarratorStage } from '../narrator.js';
 import { state } from '../state.js';
 
 const FOLDERS = [
@@ -47,8 +47,9 @@ export function mount(stage, api) {
   `;
   stage.appendChild(card);
 
-  const narrator = createNarrator({ gifKey: 'memories', role: 'archivist' });
-  card.querySelector('.memories__narrator-slot').replaceWith(narrator);
+  const narrator = createNarratorStage({ role: 'archivist', pos: 'top-left' });
+  card.querySelector('.memories__narrator-slot').replaceWith(narrator.el);
+  narrator.play([{ gifKey: 'memories', action: 'enter', pause: 400 }]);
 
   const foldersEl = card.querySelector('.memories__folders');
   const viewer = card.querySelector('.memories__viewer');
@@ -92,6 +93,8 @@ export function mount(stage, api) {
     });
     viewer.querySelector('[data-close]').addEventListener('click', () => {
       openId = null;
+      narrator.setPosition('top-left');
+      narrator.pose('idle');
       renderFolders();
       renderViewer();
     });
@@ -115,9 +118,13 @@ export function mount(stage, api) {
         updateContinue();
         if (openId === folder.id) {
           openId = null;
+          narrator.setPosition('top-left');
         } else {
           openId = folder.id;
           photoIndex = 0;
+          const idx = FOLDERS.findIndex((f) => f.id === folder.id);
+          narrator.setPosition(idx % 2 === 0 ? 'top-right' : 'top-left');
+          narrator.pose('point');
         }
         renderFolders();
         renderViewer();

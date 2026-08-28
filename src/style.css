@@ -110,50 +110,129 @@ a:hover { color: var(--crayon-red); }
 .thread-fragment--found { opacity: .3; }
 .thread-fragment--found svg path:first-child { stroke: var(--crayon-green); }
 
-/* --------------------------- Narrator ---------------------------- */
+/* --------------------------- Narrator stage ---------------------------- */
+/* Shinchan as an actor on the page, not a sticker parked under the copy:
+   the stage is absolutely positioned (against the nearest `position:
+   relative` ancestor — usually `.card`), moves between named slots between
+   beats, and shows exactly one line at a time with the previous line
+   settling small and faded behind it rather than stacking equally. */
 
-.narrator {
-  position: relative;
+.narrator-stage {
+  position: absolute;
+  z-index: 6;
   display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  z-index: 5;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  cursor: pointer;
+  transition: left 420ms cubic-bezier(.4,0,.2,1), right 420ms cubic-bezier(.4,0,.2,1),
+              top 420ms cubic-bezier(.4,0,.2,1), bottom 420ms cubic-bezier(.4,0,.2,1),
+              opacity 320ms ease;
 }
-.narrator--right { flex-direction: row-reverse; }
 
-.narrator__figure {
-  width: 190px;
+.narrator-figure {
+  width: 150px;
   flex: 0 0 auto;
   filter: drop-shadow(0 8px 14px rgba(0,0,0,.2));
+  transform-origin: 50% 100%;
 }
-.narrator__figure--wobble { animation: wobble 4s ease-in-out infinite; }
+.narrator-figure svg, .narrator-figure img, .narrator-figure video {
+  width: 100%;
+  display: block;
+  object-fit: contain;
+  background: none;
+}
+
+/* One-shot poses — JS adds/removes these classes with a forced reflow so
+   the animation restarts even when the same pose repeats back to back
+   (Roast/Gifts/Quiz all fire 'react' on every interaction). */
+.narrator-figure.pose-enter { animation: narrator-enter 420ms ease-out both; }
+@keyframes narrator-enter {
+  from { opacity: 0; transform: translateY(18px) scale(.88); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.narrator-figure.pose-point { animation: narrator-point 640ms ease-in-out 2; }
+@keyframes narrator-point {
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  30% { transform: rotate(-6deg) translateX(-3px); }
+  60% { transform: rotate(4deg) translateX(2px); }
+}
+.narrator-figure.pose-react { animation: narrator-react 420ms cubic-bezier(.34,1.56,.64,1); }
+@keyframes narrator-react {
+  0% { transform: scale(1) rotate(0deg); }
+  45% { transform: scale(1.12) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Held poses — a loop or a static end frame, kept until the next beat
+   changes them (and auto-paused while a one-shot pose above plays). */
+[data-pose='leave'] .narrator-figure { animation: narrator-leave 380ms ease-in forwards; }
+@keyframes narrator-leave {
+  to { opacity: 0; transform: translateY(12px) scale(.85); }
+}
+[data-pose='lean'] .narrator-figure { transform: rotate(-4deg); }
+[data-pose='idle'] .narrator-figure { animation: wobble 4s ease-in-out infinite; }
 @keyframes wobble {
   0%, 100% { transform: rotate(0deg); }
   50% { transform: rotate(2.5deg); }
 }
-.narrator__sticker { width: 100%; display: block; object-fit: contain; background: none; }
 
-.narrator__bubble {
+/* Position slots — each screen's beats move the stage between 2-3 of
+   these rather than pinning it centered-bottom for the whole scene. Slight
+   negative offsets let the figure overlap the card edge on purpose. */
+.narrator-stage[data-pos='bottom-left']  { left: -16px; bottom: -14px; }
+.narrator-stage[data-pos='bottom-right'] { right: -16px; bottom: -14px; align-items: flex-end; }
+.narrator-stage[data-pos='top-left']     { left: -12px; top: -18px; }
+.narrator-stage[data-pos='top-right']    { right: -12px; top: -18px; align-items: flex-end; }
+.narrator-stage[data-pos='mid-left']     { left: -18px; top: 40%; }
+.narrator-stage[data-pos='mid-right']    { right: -18px; top: 40%; align-items: flex-end; }
+.narrator-stage[data-pos='center'] {
+  left: 50%; bottom: -10px; transform: translateX(-50%); align-items: center;
+}
+.narrator-stage[data-pos='center'] .narrator-figure { width: 190px; }
+.narrator-stage[data-pos^='offstage'] { opacity: 0; pointer-events: none; }
+.narrator-stage[data-pos='offstage-right'] { right: -220px; bottom: -14px; }
+.narrator-stage[data-pos='offstage-left']  { left: -220px; bottom: -14px; }
+
+.narrator-textbox { display: flex; flex-direction: column; gap: 4px; max-width: 200px; }
+.narrator-stage[data-pos$='right'] .narrator-textbox { align-items: flex-end; text-align: right; }
+.narrator-stage[data-pos='center'] .narrator-textbox { align-items: center; text-align: center; }
+
+.narrator-line { margin: 0; }
+.narrator-line--history:empty { display: none; }
+.narrator-line--history {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0;
+  transform: scale(.92);
+  transition: opacity 260ms ease, transform 260ms ease;
+  padding: 0 4px;
+  color: var(--ink);
+}
+.narrator-line--history.narrator-line--settled { opacity: .38; transform: scale(1); }
+.narrator-line--current {
   background: var(--paper);
   border: 2px solid var(--maroon);
   border-radius: 12px;
-  padding: 8px 12px;
+  padding: 7px 12px;
   font-size: 13px;
   font-weight: 600;
-  max-width: 190px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
 }
-.narrator__bubble p {
-  margin: 0;
-  opacity: 0;
-  animation: bubble-in 380ms ease-out forwards;
-  animation-delay: calc(var(--i, 0) * 260ms + 80ms);
+.narrator-line--current.narrator-line--in { animation: line-in 320ms ease-out both; }
+@keyframes line-in {
+  from { opacity: 0; transform: translateY(6px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
-.narrator__bubble p + p { margin-top: 4px; }
-@keyframes bubble-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.narrator-line--reaction { font-style: italic; }
+.narrator-line--punchline {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--maroon);
+  border-color: var(--crayon-red);
+  transform: rotate(-1.2deg);
 }
+.narrator-line--aside { font-size: 11.5px; opacity: .8; border-style: dashed; }
 
 /* ----------------------------- Stage ------------------------------ */
 
@@ -278,23 +357,10 @@ h1.headline {
 
 /* ----------------------------- Prelude ------------------------------ */
 
-.prelude { text-align: center; padding-top: 6px; }
-.prelude__lines { display: flex; flex-direction: column; gap: 8px; margin: 18px 0 20px; }
-.prelude__line {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 15px;
-  opacity: 0;
-  animation: prelude-in 460ms ease-out forwards;
-  animation-delay: calc(var(--i, 0) * 520ms);
-}
-@keyframes prelude-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.prelude { text-align: center; padding-top: 6px; min-height: 240px; position: relative; }
 .prelude__note {
   display: inline-block;
-  margin: 6px auto 8px;
+  margin: 60px auto 8px;
   padding: 12px 18px;
   background: #fffef7;
   border: 1.5px dashed var(--maroon);
@@ -303,11 +369,12 @@ h1.headline {
   font-size: 14px;
   color: var(--maroon);
   opacity: 0;
-  animation: prelude-in 460ms ease-out forwards;
-  animation-delay: calc(var(--i, 0) * 520ms);
 }
-.prelude .narrator { justify-content: center; margin-top: 6px; }
-
+.prelude__note--reveal { animation: prelude-in 460ms ease-out forwards; }
+@keyframes prelude-in {
+  from { opacity: 0; transform: rotate(-2.5deg) translateY(6px); }
+  to { opacity: 1; transform: rotate(-2.5deg) translateY(0); }
+}
 /* ---------------------------- Cold Open ------------------------------ */
 
 .coldopen__brief {
@@ -333,34 +400,18 @@ h1.headline {
 }
 .coldopen__yes { left: 0; }
 .coldopen__no { left: 130px; transition: left 200ms ease, top 200ms ease; }
-.dodge-caption {
-  position: absolute;
-  bottom: 100%;
-  left: 130px;
-  margin-bottom: 8px;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--maroon);
-  opacity: 0;
-  transition: opacity 200ms ease, left 200ms ease;
-  white-space: nowrap;
-}
-.dodge-caption--show { opacity: .85; }
 .coldopen__closing { text-align: center; padding: 30px 0; font-family: var(--font-display); font-size: 20px; color: var(--maroon); }
 
 /* ------------------------------ Roast -------------------------------- */
 
 .roast .headline, .roast .kicker, .roast .sub { text-align: center; }
 .roast__stage { position: relative; height: 440px; margin: 6px 0 20px; }
-.center-char {
-  position: absolute;
-  left: 50%; top: 52%;
-  transform: translate(-50%, -50%);
-  width: 220px;
-  z-index: 2;
+.roast__stage .narrator-stage[data-pos='center'] {
+  top: 52%; bottom: auto; left: 50%; transform: translate(-50%, -50%);
 }
-.center-char .narrator__figure { width: 220px; }
+.roast__stage .narrator-stage[data-pos='center'] .narrator-figure { width: 220px; }
+.roast__stage .narrator-stage[data-pos='mid-left'] .narrator-figure,
+.roast__stage .narrator-stage[data-pos='mid-right'] .narrator-figure { width: 190px; }
 
 .sticker {
   position: absolute;
@@ -594,6 +645,7 @@ h1.headline {
 /* -------------------------------- Finale -------------------------------------- */
 
 .finale {
+  position: relative;
   text-align: center;
   padding-top: min(58vh, 440px);
   max-width: 460px;
@@ -602,7 +654,6 @@ h1.headline {
 }
 .finale--visible { opacity: 1; }
 .finale__text { font-size: 15px; line-height: 1.9; white-space: pre-line; margin-bottom: 18px; }
-.finale .narrator { justify-content: center; margin: 0 auto 14px; max-width: 340px; }
 .finale__secret { font-size: 12px; color: var(--maroon); opacity: .8; margin-bottom: 14px; }
 
 /* ------------------------------- Secret overlay --------------------------------- */
@@ -632,22 +683,36 @@ h1.headline {
 @media (max-width: 420px) {
   .roast__stage { height: 500px; }
   .sticker { max-width: 100px; font-size: 11px; }
-  .center-char { width: 160px; }
-  .center-char .narrator__figure { width: 160px; }
-  .narrator__figure { width: 140px; }
+  .narrator-figure { width: 120px; }
+  .narrator-stage[data-pos='center'] .narrator-figure { width: 150px; }
+  .roast__stage .narrator-stage[data-pos='center'] .narrator-figure { width: 160px; }
+  .roast__stage .narrator-stage[data-pos='mid-left'] .narrator-figure,
+  .roast__stage .narrator-stage[data-pos='mid-right'] .narrator-figure { width: 140px; }
   .gift-box { width: 100px; height: 100px; }
 }
 
 /* --------------------------- Reduced motion --------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .narrator__figure--wobble { animation: none; }
-  .narrator__bubble p, .prelude__line, .prelude__note, .sticker__poem,
+  .prelude__note, .sticker__poem,
   .quiz__reaction, .report-card, .thread-mark--pop {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
   }
+  /* The sequence still plays beat-by-beat (JS keeps the order and timing),
+     it just stops sliding/wobbling/popping between beats. */
+  .narrator-stage { transition: none; }
+  .narrator-figure,
+  .narrator-figure.pose-enter,
+  .narrator-figure.pose-point,
+  .narrator-figure.pose-react,
+  [data-pose] .narrator-figure {
+    animation: none !important;
+    transform: none !important;
+  }
+  .narrator-line--in { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .narrator-line--history { transition: none; }
   #stage.stage--exit .card, #stage.stage--exit .finale,
   #stage.stage--enter .card, #stage.stage--enter .finale {
     animation: none;

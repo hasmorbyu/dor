@@ -1,4 +1,4 @@
-import { createNarrator } from '../doodle.js';
+import { createNarratorStage } from '../narrator.js';
 import { createFragment } from '../secret.js';
 import { thread } from '../thread.js';
 
@@ -20,21 +20,19 @@ export function mount(stage, api) {
     <div class="kicker">Cold Open</div>
     <h1 class="headline">DIDDI DETECTED.</h1>
     <div class="coldopen__brief">MISSION: show you something<br/>DIFFICULTY: apparently high</div>
-    <div class="coldopen-narrator-slot"></div>
+    <div class="coldopen__narrator-slot"></div>
     <div class="coldopen__buttons">
-      <span class="dodge-caption"></span>
       <button class="btn btn--primary coldopen__yes" data-primary-action>YES</button>
       <button class="btn btn--outline coldopen__no">NO</button>
     </div>
   `;
   stage.appendChild(card);
 
-  const narrator = createNarrator({
-    gifKey: 'coldOpen',
-    role: 'gatekeeper',
-    lines: ['He spent way too much time on this.'],
-  });
-  card.querySelector('.coldopen-narrator-slot').replaceWith(narrator);
+  const narrator = createNarratorStage({ role: 'gatekeeper', pos: 'top-right' });
+  card.querySelector('.coldopen__narrator-slot').replaceWith(narrator.el);
+  narrator.play([
+    { gifKey: 'coldOpen', action: 'enter', text: 'He spent way too much time on this.', emphasis: 'aside', pause: 1100 },
+  ]);
 
   const fragment = createFragment('coldOpen');
   fragment.style.cssText = 'position:absolute; right:22px; bottom:16px; z-index:1;';
@@ -43,7 +41,6 @@ export function mount(stage, api) {
   const yesBtn = card.querySelector('.coldopen__yes');
   const noBtn = card.querySelector('.coldopen__no');
   const buttonsBox = card.querySelector('.coldopen__buttons');
-  const caption = card.querySelector('.dodge-caption');
 
   let dodgeCount = 0;
 
@@ -56,11 +53,8 @@ export function mount(stage, api) {
     const noBounds = noBtn.getBoundingClientRect();
     const maxLeft = Math.max(0, bounds.width - noBounds.width);
     const maxTop = Math.max(0, bounds.height - noBounds.height);
-    const left = Math.random() * maxLeft;
-    const top = Math.random() * maxTop;
-    noBtn.style.left = `${left}px`;
-    noBtn.style.top = `${top}px`;
-    caption.style.left = `${Math.min(left, maxLeft - 20)}px`;
+    noBtn.style.left = `${Math.random() * maxLeft}px`;
+    noBtn.style.top = `${Math.random() * maxTop}px`;
   }
 
   function onNoEnter() {
@@ -70,9 +64,9 @@ export function mount(stage, api) {
 
   function onNoClick() {
     if (dodgeCount < 3) {
+      narrator.pose('react');
+      narrator.say(DODGE_LINES[dodgeCount], 'reaction');
       dodgeCount += 1;
-      caption.textContent = DODGE_LINES[dodgeCount - 1];
-      caption.classList.add('dodge-caption--show');
       flee();
       return;
     }
@@ -82,8 +76,8 @@ export function mount(stage, api) {
   function runFakeClose() {
     yesBtn.remove();
     noBtn.remove();
-    caption.remove();
     fragment.remove();
+    narrator.leave();
     const closing = document.createElement('div');
     closing.className = 'coldopen__closing';
     closing.textContent = 'okay. closing the website.';
@@ -91,6 +85,8 @@ export function mount(stage, api) {
 
     t(() => {
       closing.textContent = 'just kidding.';
+      narrator.setPosition('center');
+      narrator.pose('enter');
     }, 2000);
 
     t(() => {

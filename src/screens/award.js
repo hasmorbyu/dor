@@ -1,5 +1,5 @@
 import { createFragment } from '../secret.js';
-import { createNarrator } from '../doodle.js';
+import { createNarratorStage } from '../narrator.js';
 
 export function mount(stage, api) {
   const card = document.createElement('div');
@@ -44,13 +44,12 @@ export function mount(stage, api) {
   `;
   stage.appendChild(card);
 
-  const narrator = createNarrator({
-    gifKey: 'award',
-    role: 'ceremony host',
-    lines: ["Oh. This one's real."],
-    side: 'right',
-  });
-  card.querySelector('.award__narrator-slot').replaceWith(narrator);
+  const narrator = createNarratorStage({ role: 'ceremony host', pos: 'bottom-right' });
+  card.querySelector('.award__narrator-slot').replaceWith(narrator.el);
+  narrator.play([
+    { gifKey: 'award', action: 'enter', pause: 700 },
+    { text: "Oh. This one's real.", emphasis: 'punchline', pause: 900 },
+  ]);
 
   const fragment = createFragment('award');
   fragment.style.cssText = 'position:absolute; right:8px; bottom:64px; z-index:1; opacity:.4;';

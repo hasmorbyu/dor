@@ -1,4 +1,4 @@
-import { createNarrator } from '../doodle.js';
+import { createNarratorStage } from '../narrator.js';
 import { reducedMotion } from '../utils.js';
 
 const LOREM = [
@@ -36,18 +36,16 @@ export function mount(stage, api) {
   }
 
   const narratorSlot = card.querySelector('.rakhi-note__narrator-slot');
-  const narrator = createNarrator({
-    gifKey: 'rakhiNote',
-    role: 'steps away',
-    lines: ["Okay. This one's yours."],
-    wobble: false,
-  });
-  narratorSlot.replaceWith(narrator);
+  const narrator = createNarratorStage({ role: 'steps away', pos: 'bottom-right' });
+  narratorSlot.replaceWith(narrator.el);
+  narrator.play(
+    [{ gifKey: 'rakhiNote', action: 'enter', text: "Okay. This one's yours.", emphasis: 'aside', pause: 1300 }],
+    { idlePose: null }
+  );
 
   t(() => {
-    narrator.style.transition = 'opacity 500ms ease';
-    narrator.style.opacity = '0';
-    t(() => narrator.remove(), 520);
+    narrator.leave();
+    t(() => narrator.el.remove(), 420);
   }, 1800);
 
   const gateBtn = card.querySelector('[data-primary-action]');

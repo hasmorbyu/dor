@@ -1,4 +1,4 @@
-import { doodleSvg, setFigureGif } from '../doodle.js';
+import { createNarratorStage } from '../narrator.js';
 import { createFragment } from '../secret.js';
 
 const REVEALS = [
@@ -31,9 +31,7 @@ export function mount(stage, api) {
         <path d="M4,40 C20,10 50,10 60,20" stroke="var(--maroon)" stroke-width="2" fill="none" stroke-linecap="round"/>
         <path d="M52,12 L60,20 L50,24" stroke="var(--maroon)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <div class="center-char">
-        <div class="narrator__figure">${doodleSvg()}</div>
-      </div>
+      <div class="roast__narrator-slot"></div>
     </div>
     <div class="continue-row">
       <button class="btn btn--primary" data-primary-action disabled>Continue</button>
@@ -42,8 +40,11 @@ export function mount(stage, api) {
   stage.appendChild(card);
 
   const stageEl = card.querySelector('.roast__stage');
-  const figure = card.querySelector('.center-char .narrator__figure');
   const continueBtn = card.querySelector('[data-primary-action]');
+
+  const narrator = createNarratorStage({ role: 'investigator', pos: 'center' });
+  card.querySelector('.roast__narrator-slot').replaceWith(narrator.el);
+  narrator.play([{ action: 'enter', pause: 400 }], { idlePose: 'idle' });
 
   const arrow = card.querySelector('.roast-arrow');
   const fragment = createFragment('roast');
@@ -68,7 +69,9 @@ export function mount(stage, api) {
     sticker.addEventListener('click', () => {
       if (sticker.classList.contains('sticker--revealed')) return;
       sticker.classList.add('sticker--revealed', 'thread-mark--pop');
-      setFigureGif(figure, reveal.gifKey, 'investigator');
+      narrator.setGif(reveal.gifKey);
+      narrator.pose('react');
+      narrator.setPosition(reveal.wide ? 'mid-left' : 'center');
       revealedCount += 1;
       if (revealedCount === REVEALS.length) continueBtn.disabled = false;
     });

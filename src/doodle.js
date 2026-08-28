@@ -1,8 +1,9 @@
-// The narrator: a real Shinchan sticker bundled locally per beat (see
-// narratorStickers.js / src/assets/stickers/README.md), with a hand-drawn
-// doodle fallback for any beat that doesn't have a sticker file yet. Framed
-// to overlap the card edge like a character standing on the page, never a
-// boxed-in avatar.
+// Low-level narrator assets: the hand-drawn doodle fallback SVG, and the
+// sticker-swap primitive that drops a bundled Shinchan sticker (see
+// narratorStickers.js / src/assets/stickers/README.md) into a figure
+// element, falling back to the doodle for any beat without a sticker file
+// yet. Consumed by narrator.js's staging/sequencing engine — screens should
+// use `createNarratorStage` from there rather than these directly.
 import { getStickerUrl } from './narratorStickers.js';
 
 export function doodleSvg() {
@@ -21,41 +22,6 @@ export function doodleSvg() {
 
 function isVideoUrl(url) {
   return /\.(webm|mp4)$/i.test(url);
-}
-
-/**
- * @param {object} opts
- * @param {string} opts.gifKey - key into narratorStickers.js's sticker map
- * @param {string[]} [opts.lines] - 1-2 short narration beats, max
- * @param {string} [opts.role] - narrator role, for the image alt text
- * @param {'left'|'right'} [opts.side] - which edge the figure overlaps
- * @param {boolean} [opts.wobble] - allow the one-idle-wobble-per-screen loop
- */
-export function createNarrator({ gifKey, lines = [], role = '', side = 'left', wobble = true }) {
-  const wrap = document.createElement('div');
-  wrap.className = `narrator narrator--${side}`;
-
-  const figure = document.createElement('div');
-  figure.className = `narrator__figure${wobble ? ' narrator__figure--wobble' : ''}`;
-  figure.setAttribute('aria-hidden', 'true');
-  figure.innerHTML = doodleSvg();
-  wrap.appendChild(figure);
-
-  if (lines.length) {
-    const bubble = document.createElement('div');
-    bubble.className = 'narrator__bubble';
-    lines.slice(0, 2).forEach((line, i) => {
-      const p = document.createElement('p');
-      p.style.setProperty('--i', i);
-      p.textContent = line;
-      bubble.appendChild(p);
-    });
-    wrap.appendChild(bubble);
-  }
-
-  setFigureGif(figure, gifKey, role);
-
-  return wrap;
 }
 
 /**
