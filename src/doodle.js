@@ -1,8 +1,9 @@
-// The narrator: a Shinchan reaction, sourced live from Giphy via a curated
-// per-beat GIF id (see narratorGifs.js) with a hand-drawn doodle fallback
-// when there's no API key yet or the request fails. Framed to overlap the
-// card edge like a character standing on the page, never a boxed-in avatar.
-import { fetchNarratorGif } from './giphy.js';
+// The narrator: a real Shinchan sticker bundled locally per beat (see
+// narratorStickers.js / src/assets/stickers/README.md), with a hand-drawn
+// doodle fallback for any beat that doesn't have a sticker file yet. Framed
+// to overlap the card edge like a character standing on the page, never a
+// boxed-in avatar.
+import { getStickerUrl } from './narratorStickers.js';
 
 export function doodleSvg() {
   return `
@@ -18,9 +19,13 @@ export function doodleSvg() {
   `;
 }
 
+function isVideoUrl(url) {
+  return /\.(webm|mp4)$/i.test(url);
+}
+
 /**
  * @param {object} opts
- * @param {string} opts.gifKey - key into narratorGifs.js's CURATED_GIFS
+ * @param {string} opts.gifKey - key into narratorStickers.js's sticker map
  * @param {string[]} [opts.lines] - 1-2 short narration beats, max
  * @param {string} [opts.role] - narrator role, for the image alt text
  * @param {'left'|'right'} [opts.side] - which edge the figure overlaps
@@ -54,18 +59,36 @@ export function createNarrator({ gifKey, lines = [], role = '', side = 'left', w
 }
 
 /**
- * Fetch the curated GIF for the given beat key and swap it into `figureEl`,
- * keeping the doodle in place until (and unless) a real GIF resolves.
+ * Swap the bundled sticker for the given beat key into `figureEl`, keeping
+ * the doodle in place if no sticker file exists yet for that beat.
  * Reusable so screens like Roast can re-target the same figure per reveal.
  */
 export function setFigureGif(figureEl, gifKey, role = '') {
-  fetchNarratorGif(gifKey).then((gif) => {
-    if (!gif) return;
-    const img = document.createElement('img');
-    img.src = gif.url;
-    img.alt = role ? `Shinchan — ${role}` : 'Shinchan reacting';
-    img.className = 'narrator__gif';
-    img.loading = 'lazy';
-    figureEl.replaceChildren(img);
-  });
+  const url = getStickerUrl(gifKey);
+  if (!url) {
+    console.warn(
+      `[stickers] no sticker file for beat "${gifKey}" yet — showing the doodle fallback. ` +
+        `Drop one into src/assets/stickers/ named "${gifKey}.<ext>" (see that folder's README).`
+    );
+    return;
+  }
+
+  const alt = role ? `Shinchan — ${role}` : 'Shinchan reacting';
+  let el;
+  if (isVideoUrl(url)) {
+    el = document.createElement('video');
+    el.src = url;
+    el.autoplay = true;
+    el.loop = true;
+    el.muted = true;
+    el.playsInline = true;
+    el.setAttribute('aria-label', alt);
+  } else {
+    el = document.createElement('img');
+    el.src = url;
+    el.alt = alt;
+    el.loading = 'lazy';
+  }
+  el.className = 'narrator__sticker';
+  figureEl.replaceChildren(el);
 }

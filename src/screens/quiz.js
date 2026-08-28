@@ -1,4 +1,4 @@
-import { createNarrator } from '../doodle.js';
+import { createNarrator, setFigureGif } from '../doodle.js';
 
 const QUESTIONS = [
   {
@@ -36,14 +36,15 @@ export function mount(stage, api) {
   `;
   stage.appendChild(card);
 
-  const narrator = createNarrator({ gifKey: 'quiz', role: 'judge', side: 'right' });
+  const narrator = createNarrator({ gifKey: 'quiz-1', role: 'judge', side: 'right' });
   card.querySelector('.quiz__narrator-slot').replaceWith(narrator);
+  const figure = narrator.querySelector('.narrator__figure');
 
   const questionsEl = card.querySelector('.quiz__questions');
   const reportSlot = card.querySelector('.report-card-slot');
   const answers = {};
 
-  QUESTIONS.forEach((q) => {
+  QUESTIONS.forEach((q, i) => {
     const qEl = document.createElement('div');
     qEl.className = 'quiz__q';
     qEl.innerHTML = `
@@ -66,6 +67,7 @@ export function mount(stage, api) {
         opt.classList.add('quiz__option--picked');
         reactionEl.textContent = q.react(label);
         reactionEl.hidden = false;
+        setFigureGif(figure, `quiz-${i + 1}`, 'judge');
         maybeShowReport();
       });
       optionsEl.appendChild(opt);
